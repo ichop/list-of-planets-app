@@ -14,7 +14,7 @@
 
   <div calss="text-right" *ngIf="isSearchBarVisible">
     <input style="border-radius: 9999em" type="text" placeholder="Search planet"
-         (change)="onInputChange($event)"
+         (keyup.enter)="onInputChange()"
          [(ngModel)]="planetName"
     >
   </div>

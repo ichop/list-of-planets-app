@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import {Router} from "@angular/router";
+import {Component,  OnInit} from '@angular/core';
 import {Location} from "@angular/common";
+
+import {SharedService} from "../services/SharedService";
 
 @Component({
   selector: 'app-header',
@@ -9,11 +10,12 @@ import {Location} from "@angular/common";
 })
 export class HeaderComponent implements OnInit {
 
+
   isSearchBarVisible = false;
   planetName: string;
 
-  constructor(private location: Location) {
-    this.location.onUrlChange(e => {
+  constructor(private location: Location, private sharedService: SharedService) {
+    this.location.onUrlChange(() => {
      this.isSearchBarVisible = this.location.path() === '/planets';
     });
   }
@@ -22,9 +24,11 @@ export class HeaderComponent implements OnInit {
     console.log();
   }
 
-  onInputChange(event) {
-    console.log(this.planetName);
+  onInputChange() {
+    this.sharedService.emitChange(this.planetName);
   }
+
+
 
 
 

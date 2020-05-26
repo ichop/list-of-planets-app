@@ -1,8 +1,9 @@
-import {Component, OnInit} from '@angular/core';
-import {DataService} from '../data.service';
+import {Component, Input, OnInit} from '@angular/core';
+import {DataService} from '../services/data.service';
 import {PlanetsListResponse} from '../models/planetsListResponse';
 import {Planet} from '../models/planet';
 import {forkJoin, Observable} from 'rxjs';
+import {SharedService} from "../services/SharedService";
 
 
 @Component({
@@ -14,14 +15,31 @@ export class PlanetsListComponent implements OnInit {
 
 
   planets: Planet[];
+  observables: Observable<PlanetsListResponse>[] = [];
   isLoaded = false;
   columnsPerPage = 5;
   pageSize = 10;
   pageIndex = 1;
   elementCount = 10;
+  searchPhrase = '';
+  isCalledFromSearch = false;
 
 
-  constructor(private dataService: DataService) {
+  constructor(private dataService: DataService, private sharedService: SharedService) {
+    sharedService.changeEmitted$.subscribe(
+      data => {
+        console.log(data as string);
+        if (data === '') {
+          this.isCalledFromSearch = false;
+        } else {
+          this.isCalledFromSearch = true;
+          this.searchPhrase = data as string;
+        }
+        this.pageIndex = 1;
+
+        this.planetArrayPrepare();
+      }
+    );
   }
 
   ngOnInit() {
@@ -38,13 +56,12 @@ export class PlanetsListComponent implements OnInit {
   }
 
   planetArrayPrepare() {
-    let observables: Observable<PlanetsListResponse>[];
     this.isLoaded = false;
+    this.planets = [];
 
-    observables = this.planetListResponsePrepare();
+    this.planetListResponsePrepare();
 
-    forkJoin(observables).subscribe((data: PlanetsListResponse[]) => {
-      this.planets = [];
+    forkJoin(this.observables).subscribe((data: PlanetsListResponse[]) => {
       this.elementCount = data[0].count;
 
       for (const planetsListResponse of data) {
@@ -68,18 +85,17 @@ export class PlanetsListComponent implements OnInit {
     });
   }
 
-  planetListResponsePrepare(): Observable<PlanetsListResponse>[] {
+  planetListResponsePrepare() {
     let requestedPageIndex: number;
-    const observables: Observable<PlanetsListResponse>[] = [];
     const requestsPerPage: number = this.calculateRequestsPerPageNumber();
     const lastPossiblePageIndex: number = this.calcLastPossibleReqPageIndex();
 
     if (this.pageSize % 10 === 0) {
       for (let i = 0; i < requestsPerPage; i++) {
         requestedPageIndex = i + 1 + (requestsPerPage * (this.pageIndex - 1));
-        observables[i] = this.dataService.get(requestedPageIndex);
+        this.fillObservablesList(requestedPageIndex, i);
       }
-      return observables;
+      //return;
     } else {
       if (this.pageSize > 10) {
         for (let i = 0; i < requestsPerPage; i++) {
@@ -94,19 +110,36 @@ export class PlanetsListComponent implements OnInit {
               requestedPageIndex = (i + (requestsPerPage * (this.pageIndex - 1)));
             }
           }
-          observables[i] = this.dataService.get(requestedPageIndex);
+          this.fillObservablesList(requestedPageIndex, i);
           if (requestedPageIndex === lastPossiblePageIndex) {
-            return observables;
+            return;
           }
         }
       } else {
         for (let i = 0; i < requestsPerPage; i++) {
           requestedPageIndex = Math.ceil(this.pageIndex / 2);
-          observables[i] = this.dataService.get(requestedPageIndex);
+          this.fillObservablesList(requestedPageIndex, i);
         }
       }
-      return observables;
+      // return;
     }
+  }
+
+  fillObservablesList(requestedPageIndex: number, i: number) {
+    console.log(this.isCalledFromSearch);
+    if (this.isCalledFromSearch) {
+      this.observables[i] = this.dataService.get(this.buildUrlFromPhrase(this.searchPhrase, requestedPageIndex));
+    } else {
+      this.observables[i] = this.dataService.get(this.buildUrlFromPageIndex(requestedPageIndex));
+    }
+  }
+
+  buildUrlFromPhrase(phrase: string, pageIndex: number): string {
+    return `?search=${phrase}&page=${pageIndex}`;
+  }
+
+  buildUrlFromPageIndex(pageIndex: number): string {
+    return `?page=${pageIndex}`;
   }
 
 
