@@ -1,9 +1,10 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {DataService} from '../services/data.service';
 import {PlanetsListResponse} from '../models/planetsListResponse';
 import {Planet} from '../models/planet';
 import {forkJoin, Observable} from 'rxjs';
-import {SharedService} from "../services/SharedService";
+import {SharedService} from '../services/SharedService';
+import {MatPaginator} from '@angular/material/paginator';
 
 
 @Component({
@@ -14,64 +15,84 @@ import {SharedService} from "../services/SharedService";
 export class PlanetsListComponent implements OnInit {
 
 
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
   planets: Planet[];
   observables: Observable<PlanetsListResponse>[] = [];
+
   isLoaded = false;
   columnsPerPage = 5;
+
   pageSize = 10;
   pageIndex = 1;
   elementCount = 10;
+  elementCountMax = 0;
+
   searchPhrase = '';
   isCalledFromSearch = false;
-
 
   constructor(private dataService: DataService, private sharedService: SharedService) {
     sharedService.changeEmitted$.subscribe(
       data => {
-        console.log(data as string);
-        if (data === '') {
-          this.isCalledFromSearch = false;
-        } else {
-          this.isCalledFromSearch = true;
-          this.searchPhrase = data as string;
-        }
-        this.pageIndex = 1;
-
-        this.planetArrayPrepare();
+        this.onSearchFieldChange(data);
       }
     );
+  }
+
+  private async onSearchFieldChange(data: any) {
+    if (data === '') {
+      this.isCalledFromSearch = false;
+      this.elementCount = this.elementCountMax;
+    } else {
+      this.isCalledFromSearch = true;
+      this.searchPhrase = data as string;
+      await this.makeInitialSearchRequest().then((response: PlanetsListResponse) => {
+        this.elementCount = response.count;
+      });
+    }
+    this.paginator.pageIndex = 0;
+    this.pageIndex = this.paginator.pageIndex + 1;
+    this.planetArrayPrepare();
+  }
+
+  private async makeInitialSearchRequest(): Promise<PlanetsListResponse> {
+    return await this.dataService.get(this.buildUrlFromPhrase(this.searchPhrase, 1)).toPromise();
   }
 
   ngOnInit() {
     this.planetArrayPrepare();
   }
 
-  onPageFired(event) {
-    this.pageIndex = event.pageIndex + 1;
+  private onPageFired(event) {
+    console.log('works');
     if (event.pageSize !== this.pageSize) {
       this.pageSize = event.pageSize;
-      this.pageIndex = 1;
+      this.paginator.pageIndex = 0;
     }
+    this.pageIndex = this.paginator.pageIndex + 1;
     this.planetArrayPrepare();
   }
 
-  planetArrayPrepare() {
+  private planetArrayPrepare() {
     this.isLoaded = false;
     this.planets = [];
 
     this.planetListResponsePrepare();
 
     forkJoin(this.observables).subscribe((data: PlanetsListResponse[]) => {
+
       this.elementCount = data[0].count;
+      if (this.elementCount > this.elementCountMax) {
+        this.elementCountMax = this.elementCount;
+      }
 
       for (const planetsListResponse of data) {
         this.planets.push(...planetsListResponse.results);
       }
       if (this.pageSize === 5) {
         if (this.pageIndex % 2 === 0) {
-          this.planets = this.planets.slice(0, 5);
-        } else {
           this.planets = this.planets.slice(5, 10);
+        } else {
+          this.planets = this.planets.slice(0, 5);
         }
       }
       if (this.pageSize === 25) {
@@ -85,17 +106,23 @@ export class PlanetsListComponent implements OnInit {
     });
   }
 
-  planetListResponsePrepare() {
+  private planetListResponsePrepare() {
     let requestedPageIndex: number;
     const requestsPerPage: number = this.calculateRequestsPerPageNumber();
     const lastPossiblePageIndex: number = this.calcLastPossibleReqPageIndex();
+    this.observables = [];
+
+    console.log('requestsPerPage ' + requestsPerPage);
+    console.log('lastPossiblePageIndex' + lastPossiblePageIndex);
 
     if (this.pageSize % 10 === 0) {
       for (let i = 0; i < requestsPerPage; i++) {
         requestedPageIndex = i + 1 + (requestsPerPage * (this.pageIndex - 1));
         this.fillObservablesList(requestedPageIndex, i);
+        if (requestedPageIndex === lastPossiblePageIndex) {
+          return;
+        }
       }
-      //return;
     } else {
       if (this.pageSize > 10) {
         for (let i = 0; i < requestsPerPage; i++) {
@@ -121,12 +148,10 @@ export class PlanetsListComponent implements OnInit {
           this.fillObservablesList(requestedPageIndex, i);
         }
       }
-      // return;
     }
   }
 
-  fillObservablesList(requestedPageIndex: number, i: number) {
-    console.log(this.isCalledFromSearch);
+  private fillObservablesList(requestedPageIndex: number, i: number) {
     if (this.isCalledFromSearch) {
       this.observables[i] = this.dataService.get(this.buildUrlFromPhrase(this.searchPhrase, requestedPageIndex));
     } else {
@@ -143,7 +168,7 @@ export class PlanetsListComponent implements OnInit {
   }
 
 
-  calculateRequestsPerPageNumber(): number {
+  private calculateRequestsPerPageNumber(): number {
     let requestsCount: number;
     if (this.pageSize > this.elementCount) {
       requestsCount = (Math.round(this.elementCount / 10));
@@ -153,8 +178,9 @@ export class PlanetsListComponent implements OnInit {
     return requestsCount;
   }
 
-  calcLastPossibleReqPageIndex(): number {
-    return (Math.ceil(this.elementCount) / 10);
+  private calcLastPossibleReqPageIndex(): number {
+    console.log((Math.ceil(this.elementCount / 10)));
+    return (Math.ceil(this.elementCount / 10));
   }
 }
 
