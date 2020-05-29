@@ -1,7 +1,9 @@
 <mat-grid-list cols="{{columnsPerPage}}" rowHeight="250px" *ngIf="isLoaded">
-  <ng-container *ngFor="let planet of planets">
+  <ng-container *ngFor="let planet of planets; let i = index">
     <mat-grid-tile>
-      <mat-card class="planet-card">
+      <mat-card class="planet-card"
+      (click)="openPlanetPage(i)"
+      >
         <mat-card-content >
           <img mat-card-image class="planet_card_image" src="../../assets/planet_img.svg" alt="{{planet.name}} image">
           <mat-card-title>{{planet.name}}</mat-card-title>
@@ -16,4 +18,6 @@
                (page)="onPageFired($event)"
 >
 </mat-paginator>
+
+
 

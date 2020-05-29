@@ -1,10 +1,12 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, Output, ViewChild} from '@angular/core';
 import {DataService} from '../services/data.service';
 import {PlanetsListResponse} from '../models/planetsListResponse';
-import {Planet} from '../models/planet';
 import {forkJoin, Observable} from 'rxjs';
 import {SharedService} from '../services/SharedService';
 import {MatPaginator} from '@angular/material/paginator';
+import {MatDialog, MatDialogConfig} from "@angular/material/dialog";
+import {PlanetPageComponent} from "../planet-page/planet-page.component";
+import {Planet} from "../models/planet";
 
 
 @Component({
@@ -27,10 +29,15 @@ export class PlanetsListComponent implements OnInit {
   elementCount = 10;
   elementCountMax = 0;
 
+
   searchPhrase = '';
   isCalledFromSearch = false;
 
-  constructor(private dataService: DataService, private sharedService: SharedService) {
+  @Output()
+  planetDetails: Planet;
+
+
+  constructor(private dataService: DataService, private sharedService: SharedService, public dialog: MatDialog) {
     sharedService.changeEmitted$.subscribe(
       data => {
         this.onSearchFieldChange(data);
@@ -86,7 +93,7 @@ export class PlanetsListComponent implements OnInit {
       }
 
       for (const planetsListResponse of data) {
-        this.planets.push(...planetsListResponse.results);
+        this.planets.push(...planetsListResponse.results as Planet[]);
       }
       if (this.pageSize === 5) {
         if (this.pageIndex % 2 === 0) {
@@ -175,12 +182,24 @@ export class PlanetsListComponent implements OnInit {
     } else {
       requestsCount = (Math.round(this.pageSize / 10));
     }
+    if (requestsCount < 1) {
+      return 1;
+    }
     return requestsCount;
   }
 
   private calcLastPossibleReqPageIndex(): number {
     console.log((Math.ceil(this.elementCount / 10)));
     return (Math.ceil(this.elementCount / 10));
+  }
+
+  openPlanetPage(index: number) {
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.data = this.planets[index];
+//    dialogConfig.height = 0.8 * window.innerHeight + 'px';
+    dialogConfig.width = 0.8 * window.innerWidth + 'px';
+    // dialogConfig.disableClose = true;
+    this.dialog.open(PlanetPageComponent, dialogConfig);
   }
 }
 
