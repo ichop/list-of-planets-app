@@ -1,0 +1,12 @@
+<div style="text-align: center" *ngIf="isLoaded">
+  <h1 mat-dialog-title>{{planet.name}}</h1>
+  <div mat-dialog-content style="text-align: center">
+    <img mat-card-image class="planet-page-img" src="../../../assets/planet_img.svg" alt="{{planet.name}} image">
+    <mat-list style="text-align: center">
+      <mat-list-item *ngFor="let field of planetKeys; let i = index">
+       {{field}} {{planetValues[i]}}
+      </mat-list-item>
+    </mat-list>
+  </div>
+</div>
+

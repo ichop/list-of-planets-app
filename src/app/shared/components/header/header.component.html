@@ -1,0 +1,23 @@
+<mat-toolbar color="primary">
+  <mat-toolbar-row>
+    <span>App logo</span>
+
+    <a mat-button class="mat-focus" [routerLink]="['/home']">
+      Home
+    </a>
+    <a mat-button class="mat-focus" [routerLink]="['/planets']" >
+      Planets
+    </a>
+
+    <div fxFlex fxLayout="row" fxLayoutAlign="flex-end" *ngIf="isSearchBarVisible">
+      <ul fxLayout="row" fxLayoutGap="20px">
+        <li>
+          <input matInput placeholder="Search planet"
+                 (keyup.enter)="onInputChange()"
+                 [(ngModel)]="planetName"
+          >
+        </li>
+      </ul>
+    </div>
+  </mat-toolbar-row>
+</mat-toolbar>

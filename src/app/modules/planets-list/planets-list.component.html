@@ -1,0 +1,18 @@
+<mat-grid-list cols="{{columnsPerPage}}" rowHeight="300" *ngIf="isLoaded">
+<ng-container *ngFor="let planet of planets; let i = index">
+      <mat-grid-tile>
+  <app-planet-card
+    [planet]="planet"
+  ></app-planet-card>
+      </mat-grid-tile>
+</ng-container>
+</mat-grid-list>
+<mat-paginator [length]="elementCount"
+               [pageSize]="pageSize"
+               [pageSizeOptions]="[5, 10, 25, 100]"
+               (page)="onPageFired($event)"
+>
+</mat-paginator>
+
+
+

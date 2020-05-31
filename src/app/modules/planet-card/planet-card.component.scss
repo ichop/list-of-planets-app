@@ -1,0 +1,19 @@
+.planet-card {
+  //min-height: 200px;
+ // max-height: 250px;
+  width: 200px;
+  text-align: center;
+  border: #37398b 1px solid;
+}
+
+.planet_card_image {
+  max-height: 150px;
+  max-width: 150px;
+}
+
+.vertical-align {
+  align-items: center;
+  vertical-align: middle;
+  display: flex;
+  justify-content: center;
+}

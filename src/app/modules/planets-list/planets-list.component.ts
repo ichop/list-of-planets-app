@@ -1,12 +1,11 @@
-import {Component, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {MatPaginator} from '@angular/material/paginator';
+import {forkJoin, Observable} from 'rxjs';
+
 import {DataService} from '../services/data.service';
 import {PlanetsListResponse} from '../models/planetsListResponse';
-import {forkJoin, Observable} from 'rxjs';
-import {SharedService} from '../services/SharedService';
-import {MatPaginator} from '@angular/material/paginator';
-import {MatDialog, MatDialogConfig} from "@angular/material/dialog";
-import {PlanetPageComponent} from "../planet-page/planet-page.component";
-import {Planet} from "../models/planet";
+import {CommunicationService} from '../services/communication.service';
+import {Planet} from '../models/planet';
 
 
 @Component({
@@ -29,16 +28,12 @@ export class PlanetsListComponent implements OnInit {
   elementCount = 10;
   elementCountMax = 0;
 
-
   searchPhrase = '';
   isCalledFromSearch = false;
 
-  @Output()
-  planetDetails: Planet;
 
-
-  constructor(private dataService: DataService, private sharedService: SharedService, public dialog: MatDialog) {
-    sharedService.changeEmitted$.subscribe(
+  constructor(private dataService: DataService, private communicationService: CommunicationService) {
+    communicationService.changeEmitted$.subscribe(
       data => {
         this.onSearchFieldChange(data);
       }
@@ -119,9 +114,6 @@ export class PlanetsListComponent implements OnInit {
     const lastPossiblePageIndex: number = this.calcLastPossibleReqPageIndex();
     this.observables = [];
 
-    console.log('requestsPerPage ' + requestsPerPage);
-    console.log('lastPossiblePageIndex' + lastPossiblePageIndex);
-
     if (this.pageSize % 10 === 0) {
       for (let i = 0; i < requestsPerPage; i++) {
         requestedPageIndex = i + 1 + (requestsPerPage * (this.pageIndex - 1));
@@ -167,11 +159,11 @@ export class PlanetsListComponent implements OnInit {
   }
 
   buildUrlFromPhrase(phrase: string, pageIndex: number): string {
-    return `?search=${phrase}&page=${pageIndex}`;
+    return `planets/?search=${phrase}&page=${pageIndex}`;
   }
 
   buildUrlFromPageIndex(pageIndex: number): string {
-    return `?page=${pageIndex}`;
+    return `planets/?page=${pageIndex}`;
   }
 
 
@@ -191,15 +183,6 @@ export class PlanetsListComponent implements OnInit {
   private calcLastPossibleReqPageIndex(): number {
     console.log((Math.ceil(this.elementCount / 10)));
     return (Math.ceil(this.elementCount / 10));
-  }
-
-  openPlanetPage(index: number) {
-    const dialogConfig = new MatDialogConfig();
-    dialogConfig.data = this.planets[index];
-//    dialogConfig.height = 0.8 * window.innerHeight + 'px';
-    dialogConfig.width = 0.8 * window.innerWidth + 'px';
-    // dialogConfig.disableClose = true;
-    this.dialog.open(PlanetPageComponent, dialogConfig);
   }
 }
 

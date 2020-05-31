@@ -1,0 +1,18 @@
+<mat-card class="planet-card" (click)="openPlanetPage()">
+  <mat-card-content>
+    <img mat-card-image class="planet_card_image" src="../../../assets/planet_img.svg" alt="{{planet.name}} image">
+    <mat-card-title>{{planet.name}}</mat-card-title>
+    <div class="vertical-align">
+      <mat-icon>group</mat-icon>
+      <span>{{planet.population}}</span>
+    </div>
+    <div class="vertical-align">
+      <mat-icon>360</mat-icon>
+      <span>{{planet.rotation_period}}</span>
+    </div>
+    <div class="vertical-align">
+      <mat-icon >rotate_90_degrees_ccw</mat-icon>
+      <span>{{planet.orbital_period}}</span>
+    </div>
+  </mat-card-content>
+</mat-card>

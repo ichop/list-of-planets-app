@@ -19,7 +19,7 @@ export class DataService {
       return this.cache.get(url);
     }
     console.log(`%c Getting from api ${url}`, 'color: red');
-    const response: Observable<any> = this.http.get(`http://localhost:8080/api/planets${url}`);
+    const response: Observable<any> = this.http.get(`http://localhost:8080/api/${url}`);
     this.cache.set(url, response);
 
     return this.cache.get(url);
