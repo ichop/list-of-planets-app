@@ -8,6 +8,7 @@ import {CommunicationService} from '../services/communication.service';
 import {Planet} from '../models/planet';
 
 
+
 @Component({
   selector: 'app-planets-list',
   templateUrl: './planets-list.component.html',
@@ -21,8 +22,6 @@ export class PlanetsListComponent implements OnInit {
   observables: Observable<PlanetsListResponse>[] = [];
 
   isLoaded = false;
-  columnsPerPage = 5;
-
   pageSize = 10;
   pageIndex = 1;
   elementCount = 10;
@@ -65,7 +64,6 @@ export class PlanetsListComponent implements OnInit {
   }
 
   private onPageFired(event) {
-    console.log('works');
     if (event.pageSize !== this.pageSize) {
       this.pageSize = event.pageSize;
       this.paginator.pageIndex = 0;
@@ -181,9 +179,9 @@ export class PlanetsListComponent implements OnInit {
   }
 
   private calcLastPossibleReqPageIndex(): number {
-    console.log((Math.ceil(this.elementCount / 10)));
     return (Math.ceil(this.elementCount / 10));
   }
+
 }
 
 

@@ -4,4 +4,28 @@
   max-width: 300px;
 }
 
+.example-tree-invisible {
+  display: none;
+}
+
+.data-tree {
+  margin-top: 0;
+  margin-bottom: 0;
+  list-style-type: none;
+}
+
+.close-button {
+  float: right;
+  top: -24px;
+  right: -24px;
+}
+
+.close-icon {
+  transition: 1s ease-in-out;
+}
+
+.close-icon:hover {
+  transform: rotate(180deg);
+}
+
 /*# sourceMappingURL=planet-page.component.css.map */

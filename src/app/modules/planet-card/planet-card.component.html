@@ -1,6 +1,11 @@
-<mat-card class="planet-card" (click)="openPlanetPage()">
+<mat-card class="planet-card" (click)="openPlanetPage()"
+          *ngIf="isLoaded"
+          [@mouseOn] = "isSelected ? 'selected': 'unselected'"
+          (mouseenter)="mouseOn()"
+          (mouseleave)="mouseOut()"
+>
   <mat-card-content>
-    <img mat-card-image class="planet_card_image" src="../../../assets/planet_img.svg" alt="{{planet.name}} image">
+    <img mat-card-image class="planet_card_image" src="{{imageSrc}}" alt="{{planet.name}} image">
     <mat-card-title>{{planet.name}}</mat-card-title>
     <div class="vertical-align">
       <mat-icon>group</mat-icon>

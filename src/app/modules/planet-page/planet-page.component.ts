@@ -1,38 +1,56 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {Component, HostBinding, HostListener, Inject, OnInit, Output} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {combineLatest, Observable} from 'rxjs';
+import {MatTreeNestedDataSource} from '@angular/material/tree';
+import {NestedTreeControl} from '@angular/cdk/tree';
+import {DatePipe} from '@angular/common';
 
 import {Planet} from '../models/planet';
 import {DataService} from '../services/data.service';
 import {Film} from '../models/film';
 import {Resident} from '../models/resident';
+import {fadeStateTrigger} from '../../shared/animations/fade.animation';
 
+
+interface DataNode {
+  name: string;
+  children?: DataNode[];
+}
 
 @Component({
   selector: 'app-planet-page',
   templateUrl: './planet-page.component.html',
-  styleUrls: ['./planet-page.component.scss']
+  styleUrls: ['./planet-page.component.scss'],
 })
 export class PlanetPageComponent implements OnInit {
+
   planet: Planet;
-  planetKeys: object;
-  planetValues: object;
   filmObservables: Observable<Film>[] = [];
   residentsObservables: Observable<Resident>[] = [];
   filmTitles: string[] = [];
   residentName: string[] = [];
+  treeData: DataNode[] = [];
+  imageSrc: string;
   isLoaded = false;
+
+  treeControl = new NestedTreeControl<DataNode>(node => node.children);
+  dataSource = new MatTreeNestedDataSource<DataNode>();
 
   constructor(
     @Inject(MAT_DIALOG_DATA) data,
-    private dataService: DataService
+    private dataService: DataService,
+    private datePipe: DatePipe,
+    private dialog: MatDialogRef<PlanetPageComponent>
   ) {
-    this.planet = data as Planet;
+    this.planet = data[0] as Planet;
+    this.imageSrc = data[1];
     this.getAdditionalDataReq();
   }
 
   ngOnInit() {
   }
+
+  hasChild = (_: number, node: DataNode) => !!node.children && node.children.length > 0;
 
   getAdditionalDataReq() {
     let skipSubscribe = false;
@@ -66,18 +84,46 @@ export class PlanetPageComponent implements OnInit {
         }
         this.planet.residents = this.residentName;
         this.planet.films = this.filmTitles;
-        this.parsePlanet();
+        this.dataTreeStructurePrepare();
         this.isLoaded = true;
       });
     } else {
-      this.parsePlanet();
+      this.dataTreeStructurePrepare();
       this.isLoaded = true;
     }
-
   }
 
-  parsePlanet() {
-    this.planetKeys = Object.keys(this.planet);
-    this.planetValues = Object.values(this.planet);
+  dataTreeStructurePrepare() {
+    Object.entries(this.planet).forEach((entry: [string, any], index) => {
+      const dataNode: DataNode = {name: this.dataTreeStringFormat(entry[0])};
+      const childrenArray: DataNode[] = [];
+      if (entry[1] instanceof Array) {
+        entry[1].forEach((node) => {
+          const children: DataNode = {name: ''};
+          children.name = node;
+          childrenArray.push(children);
+        });
+      } else {
+        if (entry[0] === 'created' || entry[0] === 'edited') {
+          entry[1] = this.datePipe.transform(new Date(entry[1]), 'dd-MM-yyyy');
+        }
+        const children: DataNode = {name: ''};
+        children.name = entry[1];
+        childrenArray.push(children);
+      }
+
+      dataNode.children = childrenArray;
+      this.treeData.push(dataNode);
+    });
+    this.dataSource.data = this.treeData;
+  }
+
+  dataTreeStringFormat(key: string): string {
+    key = key.charAt(0).toUpperCase() + key.slice(1).replace("_", "  ");
+    return key;
+  }
+
+  close() {
+    this.dialog.close();
   }
 }

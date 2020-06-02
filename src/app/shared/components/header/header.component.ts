@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {Location} from '@angular/common';
+
 import {CommunicationService} from '../../../modules/services/communication.service';
 
 @Component({

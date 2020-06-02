@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import {RouterModule} from '@angular/router';
+import {CommonModule, DatePipe} from '@angular/common';
+import {RouterLink, RouterModule} from '@angular/router';
 import {MatListModule} from '@angular/material/list';
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatCardModule} from '@angular/material/card';
@@ -9,7 +9,12 @@ import {HttpClientModule} from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatSidenavModule} from '@angular/material/sidenav';
-
+import {MatTableModule} from '@angular/material/table';
+import {MatIconModule} from '@angular/material/icon';
+import {MatTreeModule} from '@angular/material/tree';
+import {MatButtonModule} from '@angular/material/button';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {PlatformModule} from '@angular/cdk/platform';
 
 import {SharedModule} from '../../shared/shared.module';
 import {DefaultComponent} from './default.component';
@@ -19,11 +24,6 @@ import {PlanetsListComponent} from '../../modules/planets-list/planets-list.comp
 import {DataService} from '../../modules/services/data.service';
 import {CommunicationService} from '../../modules/services/communication.service';
 import {PlanetCardComponent} from '../../modules/planet-card/planet-card.component';
-import {MatTableModule} from "@angular/material/table";
-import {MatIconModule} from "@angular/material/icon";
-
-
-
 
 
 
@@ -49,8 +49,12 @@ import {MatIconModule} from "@angular/material/icon";
     MatSidenavModule,
     MatTableModule,
     MatIconModule,
+    MatTreeModule,
+    MatButtonModule,
+    BrowserAnimationsModule,
+    PlatformModule
   ],
-  providers: [DataService, CommunicationService],
+  providers: [DataService, CommunicationService, DatePipe],
   entryComponents: [PlanetPageComponent]
 })
 export class DefaultModule { }

@@ -11,7 +11,8 @@ export class Planet {
     public population: number,
     public residents: string[],
     public films: string[],
-    public url: string
+    public url: string,
+    public selected?: boolean
   ) {
   }
 }
